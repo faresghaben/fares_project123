@@ -8,8 +8,8 @@ use App\Models\Patient;
 use App\Models\AvailableSlot; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash; 
-use Illuminate\Validation\Rule; // لاستخدام Rule في التحقق من فرادة البريد الإلكتروني
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // <--- أضف هذا السطر
+use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -28,22 +28,15 @@ class DoctorController extends Controller
     {
         $user = Auth::user();
         $query = AvailableSlot::where('doctor_id', $doctor->id)
-                            ->where('start_time', '>', now()); // فقط الفتحات المستقبلية
+                            ->where('start_time', '>', now()); 
 
-        // منطق الفلترة بناءً على الدور (يمكن تبسيطه هنا)
         if ($user && $user->hasRole('admin')) {
-            // المسؤول يرى كل الفتحات للطبيب المحدد
-            // لا نطبق is_booked هنا لأن صفحة الإدارة قد تحتاج لرؤية كل شيء
         } elseif ($user && $user->hasRole('doctor')) {
-            // الطبيب يرى فتحاته الخاصة فقط (يجب أن يكون هو نفس الطبيب المعني بالصفحة)
             if ($user->id !== $doctor->user_id) {
                 return redirect()->back()->with('error', 'ليس لديك صلاحية لعرض مواعيد طبيب آخر.');
             }
-            // هنا لا نطبق is_booked=false لأن الطبيب يدير كل فتحاته
         } else {
-            // الزوار والمرضى يرون فقط الفتحات المتاحة للحجز لهذا الطبيب
-            $query->where('status', 'available'); // استخدم 'status' بدلاً من 'is_booked' كما اتفقنا
-            // أو $query->where('is_booked', false); إذا لم تكن قد غيرت اسم العمود
+            $query->where('status', 'available'); 
         }
 
         $availableSlots = $query->orderBy('start_time')->paginate(10);
@@ -53,11 +46,8 @@ class DoctorController extends Controller
     
     public function index()
     {
-        // 1. استخدام Policy للتحقق من صلاحية عرض قائمة الأطباء (viewAny)
-        // هذا سيتحقق من DoctorPolicy@viewAny
-        $this->authorize('viewAny', Doctor::class); // تمرير اسم الكلاس لأنها ليست كائناً محدداً
+        $this->authorize('viewAny', Doctor::class); 
 
-        // استعراض جميع الأطباء مع تحميل بيانات المستخدم المرتبط بهم
         $doctors = Doctor::with('user')->get();
         return view('doctors.index', compact('doctors'));
     }
@@ -69,11 +59,8 @@ class DoctorController extends Controller
      */
     public function create()
     {
-        // 2. استخدام Policy للتحقق من صلاحية إنشاء طبيب جديد (create)
-        // هذا سيتحقق من DoctorPolicy@create
         $this->authorize('create', Doctor::class);
 
-        // عرض نموذج إضافة طبيب جديد
         return view('doctors.create');
     }
 
@@ -85,17 +72,13 @@ class DoctorController extends Controller
      */
     public function store(Request $request)
     {
-        // 3. استخدام Policy للتحقق من صلاحية حفظ طبيب جديد (create)
-        // هذا سيتحقق من DoctorPolicy@create
         $this->authorize('create', Doctor::class);
 
-        // 1. التحقق من صحة بيانات المستخدم (User) قبل إنشاء الطبيب
         $request->validate([
             'user_name' => ['required', 'string', 'max:255'],
             'user_email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'user_password' => ['required', 'string', 'min:8', 'confirmed'],
             'user_password_confirmation' => ['required', 'string', 'min:8'],
-            // 2. التحقق من صحة بيانات الطبيب (Doctor)
             'name' => ['required', 'string', 'max:255'],
             'specialization' => ['required', 'string', 'max:255'],
             'license_number' => ['required', 'string', 'max:255', 'unique:doctors,license_number'],
@@ -104,15 +87,13 @@ class DoctorController extends Controller
         ]);
 
         try {
-            // إنشاء مستخدم جديد أولاً
             $user = User::create([
                 'name' => $request->user_name,
                 'email' => $request->user_email,
                 'password' => Hash::make($request->user_password),
-                'role' => 'doctor', // تعيين الدور كطبيب
+                'role' => 'doctor', 
             ]);
 
-            // إنشاء الطبيب وربطه بالمستخدم الذي تم إنشاؤه
             Doctor::create([
                 'user_id' => $user->id,
                 'name' => $request->name,
@@ -139,11 +120,8 @@ class DoctorController extends Controller
      */
     public function show(Doctor $doctor)
     {
-        // 4. استخدام Policy للتحقق من صلاحية عرض ملف طبيب معين (view)
-        // هذا سيتحقق من DoctorPolicy@view ويمرر كائن الطبيب المحدد
         $this->authorize('view', $doctor);
 
-        // عرض تفاصيل طبيب محدد
         $doctor->load('user');
         $user = $doctor->user;
         return view('doctors.show', compact('doctor', 'user'));
@@ -157,11 +135,8 @@ class DoctorController extends Controller
      */
     public function edit(Doctor $doctor)
     {
-        // 5. استخدام Policy للتحقق من صلاحية تعديل بيانات طبيب معين (update)
-        // هذا سيتحقق من DoctorPolicy@update
         $this->authorize('update', $doctor);
 
-        // عرض نموذج تعديل بيانات طبيب محدد
         $doctor->load('user');
         $user = $doctor->user;
         return view('doctors.edit', compact('doctor', 'user'));
@@ -176,11 +151,8 @@ class DoctorController extends Controller
      */
     public function update(Request $request, Doctor $doctor)
     {
-        // 6. استخدام Policy للتحقق من صلاحية تحديث بيانات طبيب معين (update)
-        // هذا سيتحقق من DoctorPolicy@update
         $this->authorize('update', $doctor);
 
-        // 1. التحقق من صحة بيانات المستخدم (User)
         $request->validate([
             'user_name' => ['required', 'string', 'max:255'],
             'user_email' => [
@@ -192,7 +164,6 @@ class DoctorController extends Controller
             ],
             'user_password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'user_password_confirmation' => ['nullable', 'string', 'min:8'],
-            // 2. التحقق من صحة بيانات الطبيب (Doctor)
             'name' => ['required', 'string', 'max:255'],
             'specialization' => ['required', 'string', 'max:255'],
             'license_number' => [
@@ -206,7 +177,6 @@ class DoctorController extends Controller
         ]);
 
         try {
-            // تحديث بيانات المستخدم المرتبط أولاً
             $user = $doctor->user;
             $user->name = $request->user_name;
             $user->email = $request->user_email;
@@ -215,8 +185,7 @@ class DoctorController extends Controller
             }
             $user->save();
 
-            // تحديث بيانات الطبيب
-            $doctor->name = $request->name; // تحديث حقل الاسم في جدول الأطباء
+            $doctor->name = $request->name; 
             $doctor->specialization = $request->specialization;
             $doctor->license_number = $request->license_number;
             $doctor->phone = $request->phone;
@@ -237,12 +206,9 @@ class DoctorController extends Controller
      */
     public function destroy(Doctor $doctor)
     {
-        // 7. استخدام Policy للتحقق من صلاحية حذف طبيب معين (delete)
-        // هذا سيتحقق من DoctorPolicy@delete
         $this->authorize('delete', $doctor);
 
         try {
-            // عند حذف الطبيب، يفضل حذف المستخدم المرتبط به أيضًا
             $user = $doctor->user;
             $doctor->delete();
             if ($user) {
@@ -265,13 +231,10 @@ class DoctorController extends Controller
      */
     public function viewMyPatients()
     {
-        // لا نحتاج لـ Policy هنا بالضرورة لأننا سنقيد الاستعلام بالأسفل
-        // ولكن يمكن استخدام Policy أيضاً إذا أردت التحقق من أن المستخدم طبيب أولاً.
         if (!Auth::user()->hasRole('doctor')) {
             abort(403, 'Unauthorized. Only doctors can view their patients.');
         }
 
-        // جلب المرضى المرتبطين بهذا الطبيب (عبر المواعيد أو السجلات الطبية)
         $myPatients = Patient::whereHas('appointments', function ($query) {
             $query->where('doctor_id', Auth::user()->doctor->id);
         })->orWhereHas('medicalRecords', function ($query) {
