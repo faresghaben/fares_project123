@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('available_slots', function (Blueprint $table) {
-            // إضافة عمود is_booked كقيمة منطقية (boolean) بقيمة افتراضية false
-            // after('end_time') لوضع العمود بعد عمود end_time (اختياري، يمكنك حذفها)
+
             $table->boolean('is_booked')->default(false)->after('end_time');
         });
     }
@@ -24,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('available_slots', function (Blueprint $table) {
-            // حذف عمود is_booked إذا تم التراجع عن الهجرة
+
             $table->dropColumn('is_booked');
         });
     }
