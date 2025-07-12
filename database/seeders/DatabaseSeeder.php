@@ -12,12 +12,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UserSeeder::class,         // أولاً: المستخدمون (المرضى والأطباء)
-            PatientSeeder::class,      // ثانياً: المرضى
-            DoctorSeeder::class,       // ثالثاً: الأطباء
-            AvailableSlotSeeder::class,// رابعاً: الفتحات المتاحة للأطباء
-            AppointmentSeeder::class,  // خامساً: المواعيد
-            MedicalRecordSeeder::class,// سادساً: السجلات الطبية
+            UserSeeder::class,         
+            PatientSeeder::class,     
+            DoctorSeeder::class,       
+            AvailableSlotSeeder::class,
+            AppointmentSeeder::class, 
+            MedicalRecordSeeder::class,
         ]);
     }
 }
