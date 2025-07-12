@@ -25,11 +25,11 @@ class AppointmentSeeder extends Seeder
         }
 
         foreach ($patients as $patient) {
-            // لكل مريض، ننشئ بعض المواعيد
-            for ($i = 0; $i < 2; $i++) { // مثلاً، موعدين لكل مريض
-                $doctor = $doctors->random(); // اختيار طبيب عشوائي
-                $startTime = $faker->dateTimeBetween('-1 month', '+1 month'); // وقت بدء عشوائي
-                $endTime = (clone $startTime)->modify('+30 minutes'); // نهاية بعد 30 دقيقة
+            
+            for ($i = 0; $i < 2; $i++) { 
+                $doctor = $doctors->random(); 
+                $startTime = $faker->dateTimeBetween('-1 month', '+1 month'); 
+                $endTime = (clone $startTime)->modify('+30 minutes'); 
 
                 Appointment::create([
                     'patient_id' => null,
