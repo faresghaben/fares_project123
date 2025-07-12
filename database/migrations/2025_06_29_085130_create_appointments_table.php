@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patient_id'); // سيتم تحويله لعلاقة لاحقاً
-            $table->unsignedBigInteger('doctor_id'); // سيتم تحويله لعلاقة لاحقاً
+            $table->unsignedBigInteger('patient_id');
+            $table->unsignedBigInteger('doctor_id');
             $table->datetime('start_time');
             $table->datetime('end_time');
             $table->enum('status', ['available', 'booked'])->default('available');
