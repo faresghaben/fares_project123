@@ -32,10 +32,8 @@ class AvailableSlotSeeder extends Seeder
                     'doctor_id' => $doctor->id,
                     'start_time' => $startTime,
                     'end_time' => $endTime,
-                    'status' => 'available', // هذا هو التعديل الذي ذكرته
-                    // 'day_of_week' => null, // يمكنك حذف هذا السطر من هنا إذا حذفته من المايجريشن
-                    // 'is_booked' => false, // احذف هذا إذا كنت تستخدم status
-                    // 'is_available' => true, // احذف هذا إذا كنت تستخدم status
+                    'status' => 'available',
+
                 ]);
             }
         }
