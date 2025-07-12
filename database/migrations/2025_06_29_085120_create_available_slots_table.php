@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('available_slots', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('doctor_id'); // سيتم تحويله لعلاقة لاحقاً
+            $table->unsignedBigInteger('doctor_id');
             $table->enum('day_of_week', ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']);
             $table->time('start_time');
             $table->time('end_time');
