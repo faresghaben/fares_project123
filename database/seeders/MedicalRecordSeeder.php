@@ -26,7 +26,7 @@ class MedicalRecordSeeder extends Seeder
 
         foreach ($patients as $patient) {
             // لكل مريض، ننشئ بعض السجلات الطبية
-            for ($i = 0; $i < 2; $i++) { // مثلاً، سجلين لكل مريض
+            for ($i = 0; $i < 2; $i++) { 
                 $doctor = $doctors->random(); // اختيار طبيب عشوائي
 
                 MedicalRecord::create([
