@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('doctor_id'); // سيتم تحويله لعلاقة لاحقاً
             $table->datetime('start_time');
             $table->datetime('end_time');
-            $table->enum('status', ['scheduled', 'completed', 'canceled'])->default('scheduled');
+            $table->enum('status', ['available', 'booked'])->default('available');
             $table->text('cancellation_reason')->nullable();
             $table->timestamps();
         });
