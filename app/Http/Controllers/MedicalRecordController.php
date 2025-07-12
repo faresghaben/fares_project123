@@ -8,7 +8,7 @@ use App\Models\Doctor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Auth; // <-- تأكد من وجود هذا السطر
+use Illuminate\Support\Facades\Auth;
 
 class MedicalRecordController extends Controller
 {
@@ -19,42 +19,30 @@ class MedicalRecordController extends Controller
      */
     public function index()
     {
-        // 1. استخدام Policy للتحقق من صلاحية عرض قائمة السجلات الطبية (viewAny)
         $this->authorize('viewAny', MedicalRecord::class);
 
-        // ابدأ في بناء الاستعلام مع تحميل العلاقات المشتركة
         $medicalRecords = MedicalRecord::with(['patient', 'doctor']);
 
-        // تطبيق منطق التصفية بناءً على دور المستخدم المسجل الدخول
-        if (Auth::check()) { // تأكد أن هناك مستخدم مسجل دخول
+        if (Auth::check()) {
             $user = Auth::user();
 
             if ($user->hasRole('patient')) {
-                // إذا كان المستخدم مريضًا، اعرض السجلات الطبية الخاصة به فقط
-                if ($user->patient) { // تأكد أن المستخدم لديه سجل مريض مرتبط
+                if ($user->patient) {
                     $medicalRecords->where('patient_id', $user->patient->id);
                 } else {
-                    // إذا كان دوره 'patient' لكن لا يوجد سجل patient مرتبط، فلا تعرض شيئًا
-                    $medicalRecords->where('id', null); // لضمان عدم إرجاع أي سجلات
+                    $medicalRecords->where('id', null);
                 }
             } elseif ($user->hasRole('doctor')) {
-                // إذا كان المستخدم طبيباً، اعرض السجلات الطبية لمرضاه فقط
-                if ($user->doctor) { // تأكد أن المستخدم لديه سجل doctor مرتبط
+                if ($user->doctor) {
                     $medicalRecords->where('doctor_id', $user->doctor->id);
                 } else {
-                    // إذا كان دوره 'doctor' لكن لا يوجد سجل doctor مرتبط، فلا تعرض شيئًا
-                    $medicalRecords->where('id', null); // لضمان عدم إرجاع أي سجلات
+                    $medicalRecords->where('id', null);
                 }
             }
-            // للمسؤول (admin) أو الأدوار الأخرى، لن نضيف أي شروط تصفية
-            // مما يعني أنهم سيرون جميع السجلات بشكل افتراضي
         } else {
-            // إذا لم يكن هناك مستخدم مسجل دخول، فلا تعرض أي سجلات طبية
-            // هذا السطر قد لا يكون ضرورياً جداً إذا كانت السياسة تفرض الدخول.
-            $medicalRecords->where('id', null); // لضمان عدم إرجاع أي سجلات لغير المسجلين دخول
+            $medicalRecords->where('id', null); 
         }
 
-        // جلب السجلات بعد تطبيق الشروط
         $medicalRecords = $medicalRecords->get();
 
         return view('medical_records.index', compact('medicalRecords'));
@@ -65,12 +53,10 @@ class MedicalRecordController extends Controller
      */
     public function create()
     {
-        // 2. استخدام Policy للتحقق من صلاحية إنشاء سجل طبي جديد (create)
-        // هذا سيتحقق من MedicalRecordPolicy@create
         $this->authorize('create', MedicalRecord::class);
 
-        $patients = Patient::all(); // جلب جميع المرضى
-        $doctors = Doctor::all();   // جلب جميع الأطباء
+        $patients = Patient::all();
+        $doctors = Doctor::all();  
         return view('medical_records.create', compact('patients', 'doctors'));
     }
 
@@ -79,8 +65,6 @@ class MedicalRecordController extends Controller
      */
     public function store(Request $request)
     {
-        // 3. استخدام Policy للتحقق من صلاحية تخزين سجل طبي جديد (create)
-        // هذا سيتحقق من MedicalRecordPolicy@create
         $this->authorize('create', MedicalRecord::class);
 
         $request->validate([
@@ -102,11 +86,8 @@ class MedicalRecordController extends Controller
      */
     public function show(MedicalRecord $medicalRecord)
     {
-        // 4. استخدام Policy للتحقق من صلاحية عرض سجل طبي معين (view)
-        // هذا سيتحقق من MedicalRecordPolicy@view
         $this->authorize('view', $medicalRecord);
 
-        // تحميل العلاقات
         $medicalRecord->load('patient', 'doctor');
 
         return view('medical_records.show', compact('medicalRecord'));
@@ -117,13 +98,10 @@ class MedicalRecordController extends Controller
      */
     public function edit(MedicalRecord $medicalRecord)
     {
-        // 5. استخدام Policy للتحقق من صلاحية عرض نموذج تعديل سجل طبي معين (update)
-        // هذا سيتحقق من MedicalRecordPolicy@update
         $this->authorize('update', $medicalRecord);
 
         $patients = Patient::all();
         $doctors = Doctor::all();
-        // تحميل العلاقات قبل إرسالها إلى الـ view
         $medicalRecord->load('patient', 'doctor');
         return view('medical_records.edit', compact('medicalRecord', 'patients', 'doctors'));
     }
@@ -133,8 +111,6 @@ class MedicalRecordController extends Controller
      */
     public function update(Request $request, MedicalRecord $medicalRecord)
     {
-        // 6. استخدام Policy للتحقق من صلاحية تحديث سجل طبي معين (update)
-        // هذا سيتحقق من MedicalRecordPolicy@update
         $this->authorize('update', $medicalRecord);
 
         $request->validate([
@@ -156,8 +132,6 @@ class MedicalRecordController extends Controller
      */
     public function destroy(MedicalRecord $medicalRecord)
     {
-        // 7. استخدام Policy للتحقق من صلاحية حذف سجل طبي معين (delete)
-        // هذا سيتحقق من MedicalRecordPolicy@delete
         $this->authorize('delete', $medicalRecord);
 
         $medicalRecord->delete();
