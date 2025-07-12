@@ -10,7 +10,7 @@ use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule; // تأكد من استيراد Rule
+use Illuminate\Validation\Rule; 
 
 class AppointmentController extends Controller
 {
@@ -81,7 +81,7 @@ class AppointmentController extends Controller
 
         $availableAppointments = $availableAppointments->paginate(10);
 
-        return view('appointments.available', compact('availableAppointments')); // ستحتاج لإنشاء هذا الـ view
+        return view('appointments.available', compact('availableAppointments')); // سنحتاج لإنشاء هذا الـ view
     }
 
     /**
@@ -104,7 +104,7 @@ class AppointmentController extends Controller
                                 ->orderBy('start_time')
                                 ->paginate(10);
 
-        // يمكنك تمرير معلومات الطبيب أيضاً إلى الـ view لعرض اسمه مثلاً
+
         return view('appointments.available_for_doctor', compact('availableAppointments', 'doctor'));
     }
 
@@ -112,7 +112,7 @@ class AppointmentController extends Controller
      * Handle the booking of an available appointment by a patient.
      * دالة لمعالجة حجز موعد من قبل المريض
      */
-    public function book(Request $request, AvailableSlot $availableSlot) // <--- هنا التغيير: نمرر AvailableSlot
+    public function book(Request $request, AvailableSlot $availableSlot)
     {
         $user = Auth::user();
 
@@ -197,10 +197,10 @@ class AppointmentController extends Controller
         // قواعد التحقق (Validation) من البيانات المدخلة
         $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
-            'patient_id' => ['nullable', 'exists:patients,id', Rule::requiredIf($request->status === 'scheduled')], // يمكن أن يكون null إذا كانت الحالة 'available'
+            'patient_id' => ['nullable', 'exists:patients,id', Rule::requiredIf($request->status === 'scheduled')],
             'start_time' => 'required|date|after_or_equal:now',
             'end_time' => 'required|date|after:start_time',
-            'status' => ['required', 'string', Rule::in(['scheduled', 'completed', 'canceled', 'available'])], // إضافة 'available'
+            'status' => ['required', 'string', Rule::in(['booked', 'available'])], 
             'cancellation_reason' => 'nullable|string|max:1000',
         ]);
 
