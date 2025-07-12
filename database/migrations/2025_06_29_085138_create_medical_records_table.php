@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('medical_records', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patient_id'); // سيتم تحويله لعلاقة لاحقاً
-            $table->unsignedBigInteger('doctor_id'); // سيتم تحويله لعلاقة لاحقاً
-            $table->text('diagnosis');//التشخيص
-            $table->text('treatment')->nullable();//العلاج
-            $table->date ('record_date');//تاريخ التشخيص
+            $table->unsignedBigInteger('patient_id'); 
+            $table->unsignedBigInteger('doctor_id');
+            $table->text('diagnosis');
+            $table->text('treatment')->nullable();
+            $table->date ('record_date');
             $table->timestamps();
         });
     }
